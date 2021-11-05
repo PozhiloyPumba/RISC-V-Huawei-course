@@ -1,15 +1,13 @@
 #include "interpretator.hpp"
 
-#define DUMP
+// #define DUMP
 
 //=====================================================================================================
 
 static void binDump(const unsigned x) {
-    // printf("hi\n");
-    for (int i = 31; i >= 0; --i) {
+
+    for (int i = 31; i >= 0; --i)
         printf("%d", (x >> i) & 1);
-        // printf("%d = %d\n", i, (x >> i) & 1);
-    }
     
     printf("\n");
 }
@@ -17,6 +15,7 @@ static void binDump(const unsigned x) {
 //=====================================================================================================
 
 void Instruction::RTypeFill(const unsigned x) {
+
     rd_ = getBits (x, 7, 11);
     rs1_ = getBits (x, 15, 19);
     rs2_ = getBits (x, 20, 24);
@@ -25,6 +24,7 @@ void Instruction::RTypeFill(const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::ITypeFill(const unsigned x) {
+
     rd_ = getBits (x, 7, 11);
     rs1_ = getBits (x, 15, 19);
 
@@ -36,6 +36,7 @@ void Instruction::ITypeFill(const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::STypeFill(const unsigned x) {
+
     rs1_ = getBits (x, 15, 19);
     rs2_ = getBits (x, 20, 24);
 
@@ -47,6 +48,7 @@ void Instruction::STypeFill(const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::BTypeFill(const unsigned x) {
+
     rs1_ = getBits (x, 15, 19);
     rs2_ = getBits (x, 20, 24);
 
@@ -58,6 +60,7 @@ void Instruction::BTypeFill(const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::UTypeFill(const unsigned x) {
+
     rd_ = getBits (x, 7, 11);
     imm_ |= getBits (x, 12, 31);
 }
@@ -65,6 +68,7 @@ void Instruction::UTypeFill(const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::JTypeFill(const unsigned x) {
+
     rd_ = getBits (x, 7, 11);
 
     for (int i = 20; i < 32; ++i)
@@ -75,8 +79,7 @@ void Instruction::JTypeFill(const unsigned x) {
 //=====================================================================================================
 
 int Instruction::getFormat (const unsigned x) {
-        binDump(x);
-        
+
         switch (getBits (x, 0, 6)) {
             case 0b0110111 : UTypeFill (x); return LUI_OPCODE;
             case 0b0010111 : UTypeFill (x); return AUIPC_OPCODE;
@@ -98,6 +101,7 @@ int Instruction::getFormat (const unsigned x) {
 //-----------------------------------------------------------------------------------------------------
 
 void Instruction::getInstr (const unsigned x) {
+
     switch (getFormat(x)) {
         case LUI_OPCODE    : executor_ = &Instruction::addFunc;      break;
         case AUIPC_OPCODE  : executor_ = &Instruction::auipcFunc;    break;
@@ -190,6 +194,7 @@ void Instruction::getInstr (const unsigned x) {
 //=====================================================================================================
 
 bool Instruction::luiFunc (State &state) {
+
     state.pc += 4;
 
     if (rd_ == 0)
@@ -247,6 +252,7 @@ bool Instruction::jalFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::jalrFunc (State &state) {
+
     if (rd_ != 0)
         state.regs[rd_] = state.pc + 4;
     
@@ -429,11 +435,19 @@ bool Instruction::bgeuFunc (State &state) {
 
 bool Instruction::lbFunc (State &state) {
 
+    state.pc += 4;
+
     state.memory.read(state.regs[rs1_] + imm_, state.regs[rd_]);
 
     state.regs[rd_] >>= 24;
     for(int i = 8; i < 32; ++i)
         state.regs[rd_] |= getBits (state.regs[rd_], 7, 7);
+
+
+    #ifdef DUMP
+        std::cout << "LB Instruction" << std::endl;
+        std::cout << "  to x" << rd_ << " (" << state.regs[rd_] << ") from addr " << state.regs[rs1_] + imm_ << std::endl;
+    #endif
 
     return 0;
 }
@@ -442,7 +456,14 @@ bool Instruction::lbFunc (State &state) {
 
 bool Instruction::lwFunc (State &state) {
 
+    state.pc += 4;
+
     state.memory.read(state.regs[rs1_] + imm_, state.regs[rd_]);
+
+    #ifdef DUMP
+        std::cout << "LW Instruction" << std::endl;
+        std::cout << "  to x" << rd_ << " (" << state.regs[rd_] << ") from addr " << state.regs[rs1_] + imm_ << std::endl;
+    #endif
 
     return 0;
 }
@@ -452,7 +473,14 @@ bool Instruction::lwFunc (State &state) {
 
 bool Instruction::sbFunc (State &state) {
 
+    state.pc += 4;
+
     state.memory.write(state.regs[rs1_] + imm_, regType(state.regs[rs2_] & 0xFF));
+
+    #ifdef DUMP
+        std::cout << "SB Instruction" << std::endl;
+        std::cout << "from addr " << state.regs[rs1_] + imm_ << " ("<< regType(state.regs[rs2_] & 0xFF) << ") to x" << rs2_ << std::endl;
+    #endif
 
     return 0;
 }
@@ -461,7 +489,15 @@ bool Instruction::sbFunc (State &state) {
 
 bool Instruction::swFunc (State &state) {
 
+    state.pc += 4;
+
     state.memory.write(state.regs[rs1_] + imm_, state.regs[rs2_]);
+
+    #ifdef DUMP
+        std::cout << "SW Instruction" << std::endl;
+        std::cout << "from addr " << state.regs[rs1_] + imm_ << " ("<< state.regs[rs2_] << ") to x" << rs2_ << std::endl;
+    #endif
+
     return 0;
 }
 
@@ -469,6 +505,7 @@ bool Instruction::swFunc (State &state) {
 
 
 bool Instruction::addiFunc (State &state) {
+
     state.pc += 4;
 
     if(rd_ == 0)
@@ -488,6 +525,7 @@ bool Instruction::addiFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::oriFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -507,6 +545,7 @@ bool Instruction::oriFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::andiFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -526,6 +565,7 @@ bool Instruction::andiFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::xoriFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -546,6 +586,7 @@ bool Instruction::xoriFunc (State &state) {
 
 
 bool Instruction::addFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -565,6 +606,7 @@ bool Instruction::addFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::subFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -584,6 +626,7 @@ bool Instruction::subFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::orFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -603,6 +646,7 @@ bool Instruction::orFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::andFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -622,6 +666,7 @@ bool Instruction::andFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::xorFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -641,6 +686,7 @@ bool Instruction::xorFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::sllFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)
@@ -660,6 +706,7 @@ bool Instruction::sllFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 bool Instruction::srlFunc (State &state) {
+
     state.pc += 4;
     
     if(rd_ == 0)

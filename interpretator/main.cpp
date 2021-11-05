@@ -62,13 +62,15 @@ int main (int argc, char *argv[]) {
     State state = {};
     if (readBin (state.memory, argv[1]))
         return 0;
-    
+
     for (state.pc = 0; state.pc < state.memory.sizeCode; ) {
 
         Instruction a (state.memory.readInstr(state.pc));
         instrFunc func = a.executor_;
         (a.*(func))(state);
     }
+
+    std::cout << state.regs[1] << std::endl;
 
     return 0;
 }

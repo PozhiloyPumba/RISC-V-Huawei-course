@@ -1,17 +1,13 @@
-all: interpretator python clear
-
-python: 
-	rm -rf simple/*
-	python3 s.py
+all: interpretator
 
 interpretator: main.o interpretator.o
-	g++ main.o interpretator.o -g -o main
+	g++ main.o interpretator.o -o main
 
 main.o: 
-	g++ main.cpp -c -g
+	g++ main.cpp -c
 
 interpretator.o:
-	g++ interpretator.cpp -c -g
+	g++ interpretator.cpp -c
 
 clear:
 	rm -rf *.o

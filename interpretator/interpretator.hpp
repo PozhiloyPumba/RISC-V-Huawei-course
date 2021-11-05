@@ -55,7 +55,7 @@ public:
 
 //-----------------------------------------------------------------------------------------------------
 
-    unsigned readInstr (size_t placeInMemory) {
+    unsigned readInstr (size_t placeInMemory) const{
 
         return *((unsigned *)(physicalMem_ + placeInMemory));
     }
@@ -132,7 +132,6 @@ public:
     bool xorFunc (State &state);
     bool sllFunc (State &state);
     bool srlFunc (State &state);
-    //TODO: sra
 
 };
 
