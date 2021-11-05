@@ -93,14 +93,14 @@ int Instruction::getFormat (const unsigned x) {
             
             default:
                 std::cout << "undefined opcode!" << std::endl;
-                abort();
+                return -1;
         }
         return -1;
     }
 
 //-----------------------------------------------------------------------------------------------------
 
-void Instruction::getInstr (const unsigned x) {
+bool Instruction::getInstr (const unsigned x) {
 
     switch (getFormat(x)) {
         case LUI_OPCODE    : executor_ = &Instruction::addFunc;      break;
@@ -118,7 +118,8 @@ void Instruction::getInstr (const unsigned x) {
 
                 default:
                     std::cout << "undefined branch Instruction!" << std::endl;
-                    abort();
+                    bad_ = true;
+                    return 1;
             }
             break;
         case LOAD_OPCODE   :
@@ -128,7 +129,8 @@ void Instruction::getInstr (const unsigned x) {
 
                 default:
                     std::cout << "undefined load Instruction!" << std::endl;
-                    abort();
+                    bad_ = true;
+                    return 1;
             }
             break;
         case STORE_OPCODE  :
@@ -138,7 +140,8 @@ void Instruction::getInstr (const unsigned x) {
 
                 default:
                     std::cout << "undefined store Instruction!" << std::endl;
-                    abort();
+                    bad_ = true;
+                    return 1;
             }
             break;
         case OP_IMM_OPCODE :
@@ -150,7 +153,8 @@ void Instruction::getInstr (const unsigned x) {
                 
                 default:
                     std::cout << "undefined op imm Instruction!" << std::endl;
-                    abort();
+                    bad_ = true;
+                    return 1;
             }
             break;
         case OP_OPCODE     :
@@ -166,7 +170,8 @@ void Instruction::getInstr (const unsigned x) {
 
                         default:
                             std::cout << "0 undefined op Instruction!" << std::endl;
-                            abort();
+                            bad_ = true;
+                            return 1;
                     }
                     break;
                 case 0b0100000  :
@@ -175,25 +180,30 @@ void Instruction::getInstr (const unsigned x) {
 
                         default:
                             std::cout << "1 undefined op Instruction!" << std::endl;
-                            abort();
+                            bad_ = true;
+                            return 1;
                     }
                     break;
                 
                 default:
                     std::cout << "undefined op Instruction " << getBits (x, 25, 31) << std::endl;
-                    abort();
+                    bad_ = true;
+                    return 1;
             }
             break;
 
         default:
             std::cout << "undefined opcode!" << std::endl;
-            abort();
+            bad_ = true;
+            return 1;
     }
+
+    return 0;
 }
 
 //=====================================================================================================
 
-bool Instruction::luiFunc (State &state) {
+bool Instruction::luiFunc (State &state) const {
 
     state.pc += 4;
 
@@ -213,7 +223,7 @@ bool Instruction::luiFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::auipcFunc (State &state) {
+bool Instruction::auipcFunc (State &state) const {
 
     state.pc += 4;
     if (rd_ == 0)
@@ -232,7 +242,7 @@ bool Instruction::auipcFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::jalFunc (State &state) {
+bool Instruction::jalFunc (State &state) const {
     
     if (rd_ != 0)
         state.regs[rd_] = state.pc + 4;
@@ -251,7 +261,7 @@ bool Instruction::jalFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::jalrFunc (State &state) {
+bool Instruction::jalrFunc (State &state) const {
 
     if (rd_ != 0)
         state.regs[rd_] = state.pc + 4;
@@ -271,7 +281,7 @@ bool Instruction::jalrFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 
-bool Instruction::beqFunc (State &state) {
+bool Instruction::beqFunc (State &state) const {
 
     state.pc += 4;
     if (state.regs[rs1_] == state.regs[rs2_]) {
@@ -298,7 +308,7 @@ bool Instruction::beqFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::bneFunc (State &state) {
+bool Instruction::bneFunc (State &state) const {
 
     state.pc += 4;
 
@@ -325,7 +335,7 @@ bool Instruction::bneFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::bltFunc (State &state) {
+bool Instruction::bltFunc (State &state) const {
 
     state.pc += 4;
 
@@ -352,7 +362,7 @@ bool Instruction::bltFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::bgeFunc (State &state) {
+bool Instruction::bgeFunc (State &state) const {
 
     state.pc += 4;
 
@@ -379,7 +389,7 @@ bool Instruction::bgeFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::bltuFunc (State &state) {
+bool Instruction::bltuFunc (State &state) const {
 
     state.pc += 4;
 
@@ -406,7 +416,7 @@ bool Instruction::bltuFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::bgeuFunc (State &state) {
+bool Instruction::bgeuFunc (State &state) const {
 
     state.pc += 4;
 
@@ -433,7 +443,7 @@ bool Instruction::bgeuFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::lbFunc (State &state) {
+bool Instruction::lbFunc (State &state) const {
 
     state.pc += 4;
 
@@ -454,7 +464,7 @@ bool Instruction::lbFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::lwFunc (State &state) {
+bool Instruction::lwFunc (State &state) const {
 
     state.pc += 4;
 
@@ -471,7 +481,7 @@ bool Instruction::lwFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 
-bool Instruction::sbFunc (State &state) {
+bool Instruction::sbFunc (State &state) const {
 
     state.pc += 4;
 
@@ -487,7 +497,7 @@ bool Instruction::sbFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::swFunc (State &state) {
+bool Instruction::swFunc (State &state) const {
 
     state.pc += 4;
 
@@ -504,7 +514,7 @@ bool Instruction::swFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 
-bool Instruction::addiFunc (State &state) {
+bool Instruction::addiFunc (State &state) const {
 
     state.pc += 4;
 
@@ -524,7 +534,7 @@ bool Instruction::addiFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::oriFunc (State &state) {
+bool Instruction::oriFunc (State &state) const {
 
     state.pc += 4;
     
@@ -544,7 +554,7 @@ bool Instruction::oriFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::andiFunc (State &state) {
+bool Instruction::andiFunc (State &state) const {
 
     state.pc += 4;
     
@@ -564,7 +574,7 @@ bool Instruction::andiFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::xoriFunc (State &state) {
+bool Instruction::xoriFunc (State &state) const {
 
     state.pc += 4;
     
@@ -585,7 +595,7 @@ bool Instruction::xoriFunc (State &state) {
 //-----------------------------------------------------------------------------------------------------
 
 
-bool Instruction::addFunc (State &state) {
+bool Instruction::addFunc (State &state) const {
 
     state.pc += 4;
     
@@ -605,7 +615,7 @@ bool Instruction::addFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::subFunc (State &state) {
+bool Instruction::subFunc (State &state) const {
 
     state.pc += 4;
     
@@ -625,7 +635,7 @@ bool Instruction::subFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::orFunc (State &state) {
+bool Instruction::orFunc (State &state) const {
 
     state.pc += 4;
     
@@ -645,7 +655,7 @@ bool Instruction::orFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::andFunc (State &state) {
+bool Instruction::andFunc (State &state) const {
 
     state.pc += 4;
     
@@ -665,7 +675,7 @@ bool Instruction::andFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::xorFunc (State &state) {
+bool Instruction::xorFunc (State &state) const {
 
     state.pc += 4;
     
@@ -685,7 +695,7 @@ bool Instruction::xorFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::sllFunc (State &state) {
+bool Instruction::sllFunc (State &state) const {
 
     state.pc += 4;
     
@@ -705,7 +715,7 @@ bool Instruction::sllFunc (State &state) {
 
 //-----------------------------------------------------------------------------------------------------
 
-bool Instruction::srlFunc (State &state) {
+bool Instruction::srlFunc (State &state) const {
 
     state.pc += 4;
     

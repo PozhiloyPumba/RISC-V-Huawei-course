@@ -1,4 +1,4 @@
-all: interpretator
+all: interpretator clear
 
 interpretator: main.o interpretator.o
 	g++ main.o interpretator.o -o main

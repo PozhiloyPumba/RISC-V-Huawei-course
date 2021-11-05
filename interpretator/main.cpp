@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include "interpretator.hpp"
 
-using instrFunc = bool (Instruction::* )(State &);
+using instrFunc = bool (Instruction::* )(State &) const;
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -66,6 +66,10 @@ int main (int argc, char *argv[]) {
     for (state.pc = 0; state.pc < state.memory.sizeCode; ) {
 
         Instruction a (state.memory.readInstr(state.pc));
+
+        if(a.getBad())
+            return 0;
+        
         instrFunc func = a.executor_;
         (a.*(func))(state);
     }

@@ -81,11 +81,12 @@ class Instruction {
 
 private:
 
-    size_t rd_, rs1_, rs2_;
+    uint8_t rd_, rs1_, rs2_;
+    bool bad_ = false;
     regType imm_ = 0;
 
     int getFormat (const unsigned x);
-    void getInstr (const unsigned x);
+    bool getInstr (const unsigned x);
 
     void RTypeFill(const unsigned x);
     void ITypeFill(const unsigned x);
@@ -100,38 +101,42 @@ public:
         getInstr (x);
     }
 
-    bool (Instruction::* executor_) (State &);
+    bool getBad () const{
+        return bad_;
+    }
 
-    bool luiFunc (State &state);
-    bool auipcFunc (State &state);
-    bool jalFunc (State &state);
-    bool jalrFunc (State &state);
+    bool (Instruction::* executor_) (State &) const;
 
-    bool beqFunc (State &state);
-    bool bneFunc (State &state);
-    bool bltFunc (State &state);
-    bool bgeFunc (State &state);
-    bool bltuFunc (State &state);
-    bool bgeuFunc (State &state);
+    bool luiFunc (State &state) const;
+    bool auipcFunc (State &state) const;
+    bool jalFunc (State &state) const;
+    bool jalrFunc (State &state) const;
 
-    bool lbFunc (State &state);
-    bool lwFunc (State &state);
+    bool beqFunc (State &state) const;
+    bool bneFunc (State &state) const;
+    bool bltFunc (State &state) const;
+    bool bgeFunc (State &state) const;
+    bool bltuFunc (State &state) const;
+    bool bgeuFunc (State &state) const;
 
-    bool sbFunc (State &state);
-    bool swFunc (State &state);
+    bool lbFunc (State &state) const;
+    bool lwFunc (State &state) const;
 
-    bool addiFunc (State &state);
-    bool oriFunc (State &state);
-    bool andiFunc (State &state);
-    bool xoriFunc (State &state);
+    bool sbFunc (State &state) const;
+    bool swFunc (State &state) const;
 
-    bool addFunc (State &state);
-    bool subFunc (State &state);
-    bool orFunc (State &state);
-    bool andFunc (State &state);
-    bool xorFunc (State &state);
-    bool sllFunc (State &state);
-    bool srlFunc (State &state);
+    bool addiFunc (State &state) const;
+    bool oriFunc (State &state) const;
+    bool andiFunc (State &state) const;
+    bool xoriFunc (State &state) const;
+
+    bool addFunc (State &state) const;
+    bool subFunc (State &state) const;
+    bool orFunc (State &state) const;
+    bool andFunc (State &state) const;
+    bool xorFunc (State &state) const;
+    bool sllFunc (State &state) const;
+    bool srlFunc (State &state) const;
 
 };
 
